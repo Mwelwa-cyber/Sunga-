@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --background: #faf3e7;
+  --foreground: #1b3b2f;
+  --sunga-cream: #faf3e7;
+  --sunga-cream-soft: #f3e9d8;
+  --sunga-green: #1b3b2f;
+  --sunga-green-light: #2a5240;
+  --sunga-green-tint: #e8efe1;
+  --sunga-orange: #e8722c;
+  --sunga-orange-dark: #cf6323;
+  --sunga-card: #ffffff;
+  --sunga-muted: #6b7a72;
+  --sunga-danger: #c1442c;
+  --sunga-border: #e7ddca;
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sunga-cream: var(--sunga-cream);
+  --color-sunga-cream-soft: var(--sunga-cream-soft);
+  --color-sunga-green: var(--sunga-green);
+  --color-sunga-green-light: var(--sunga-green-light);
+  --color-sunga-green-tint: var(--sunga-green-tint);
+  --color-sunga-orange: var(--sunga-orange);
+  --color-sunga-orange-dark: var(--sunga-orange-dark);
+  --color-sunga-card: var(--sunga-card);
+  --color-sunga-muted: var(--sunga-muted);
+  --color-sunga-danger: var(--sunga-danger);
+  --color-sunga-border: var(--sunga-border);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
