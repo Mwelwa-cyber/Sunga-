@@ -64,7 +64,12 @@ export default function TrackPage() {
         )}
 
         <div>
-          <p className="mb-2 text-sm font-medium text-sunga-muted">Expenses today</p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-medium text-sunga-muted">Expenses today</p>
+            <Link href="/transactions" className="text-sm font-medium text-sunga-orange">
+              View all
+            </Link>
+          </div>
           {todaysExpenses.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-sunga-border bg-white p-4 text-center text-sm text-sunga-muted">
               Nothing recorded yet today.
@@ -75,7 +80,11 @@ export default function TrackPage() {
                 if (t.type !== "expense") return null;
                 const Icon = getIcon(EXPENSE_CATEGORY_ICONS[t.category] ?? "dots");
                 return (
-                  <div key={t.id} className="flex items-center gap-3 px-4 py-3">
+                  <Link
+                    key={t.id}
+                    href={`/transactions/${t.id}`}
+                    className="flex items-center gap-3 px-4 py-3"
+                  >
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sunga-green-tint text-sunga-green">
                       <Icon size={16} />
                     </span>
@@ -88,7 +97,7 @@ export default function TrackPage() {
                     <p className="font-semibold text-sunga-green">
                       {formatMoney(t.amount, currency)}
                     </p>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

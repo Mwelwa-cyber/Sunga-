@@ -57,6 +57,13 @@ npm run lint    # eslint
   categories
 - Insights: month overview (saved/planned/spent), weekly spending chart,
   saving streak, goals recap
+- Bills & subscriptions: recurring/one-time bills with due dates and
+  priority, a "coming up" list on Home, a must-pay reminder on Plan, and
+  "mark as paid" (which records an expense and rolls recurring bills to
+  their next due date)
+- Transaction history and editing: every income/expense/transfer is
+  editable and deletable (amount, category/source, priority, date, note)
+  from `/transactions`
 
 All data is stored locally in the browser (`localStorage`) — there is no
 backend yet. Clearing site data resets the app.

@@ -76,6 +76,30 @@ export interface TransferTransaction {
 
 export type Transaction = IncomeTransaction | ExpenseTransaction | TransferTransaction;
 
+type DistributivePartialOmit<T, K extends string> = T extends unknown
+  ? Partial<Omit<T, K>>
+  : never;
+
+export type TransactionUpdate = DistributivePartialOmit<
+  Transaction,
+  "id" | "type" | "createdAt"
+>;
+
+export type BillFrequency = "one_time" | "weekly" | "monthly" | "yearly";
+
+export interface Bill {
+  id: string;
+  name: string;
+  amount: number;
+  currency: CurrencyCode;
+  category: string;
+  priority: ExpensePriority;
+  frequency: BillFrequency;
+  dueDate: string;
+  paidAt: string | null;
+  createdAt: string;
+}
+
 export interface GoalDeposit {
   id: string;
   goalId: string;

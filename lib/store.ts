@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createId } from "./id";
-import { isSameMonth, startOfWeek, todayISO, WEEKDAY_LABELS } from "./dates";
+import { addInterval, isSameMonth, startOfWeek, todayISO, WEEKDAY_LABELS } from "./dates";
 import {
+  Bill,
+  BillFrequency,
   CurrencyCode,
   ExpensePriority,
   Goal,
@@ -15,6 +17,7 @@ import {
   Profile,
   SavingsLocation,
   Transaction,
+  TransactionUpdate,
   TrackingMode,
 } from "./types";
 
@@ -43,6 +46,7 @@ interface SungaState {
   goals: Goal[];
   goalEntries: GoalDeposit[];
   plans: Plan[];
+  bills: Bill[];
   hydrated: boolean;
 
   setHydrated: () => void;
@@ -104,6 +108,24 @@ interface SungaState {
   ) => void;
 
   savePlan: (categories: PlanCategory[]) => void;
+
+  updateTransaction: (id: string, updates: TransactionUpdate) => void;
+  deleteTransaction: (id: string) => void;
+
+  addBill: (input: {
+    name: string;
+    amount: number;
+    category: string;
+    priority: ExpensePriority;
+    frequency: BillFrequency;
+    dueDate: string;
+  }) => string;
+  updateBill: (
+    id: string,
+    updates: Partial<Pick<Bill, "name" | "amount" | "category" | "priority" | "frequency" | "dueDate">>
+  ) => void;
+  deleteBill: (id: string) => void;
+  markBillPaid: (id: string, date: string) => void;
 }
 
 const initialProfile: Profile | null = null;
@@ -116,6 +138,7 @@ export const useSungaStore = create<SungaState>()(
       goals: [],
       goalEntries: [],
       plans: [],
+      bills: [],
       hydrated: false,
 
       setHydrated: () => set({ hydrated: true }),
@@ -257,6 +280,72 @@ export const useSungaStore = create<SungaState>()(
         };
         set((state) => ({ plans: [...state.plans, plan] }));
       },
+
+      updateTransaction: (id, updates) =>
+        set((state) => ({
+          transactions: state.transactions.map((t) =>
+            t.id === id ? ({ ...t, ...updates } as Transaction) : t
+          ),
+        })),
+
+      deleteTransaction: (id) =>
+        set((state) => ({
+          transactions: state.transactions.filter((t) => t.id !== id),
+        })),
+
+      addBill: ({ name, amount, category, priority, frequency, dueDate }) => {
+        const currency = get().profile?.currency ?? "ZMW";
+        const id = createId("bill");
+        const bill: Bill = {
+          id,
+          name,
+          amount,
+          currency,
+          category,
+          priority,
+          frequency,
+          dueDate,
+          paidAt: null,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({ bills: [bill, ...state.bills] }));
+        return id;
+      },
+
+      updateBill: (id, updates) =>
+        set((state) => ({
+          bills: state.bills.map((b) => (b.id === id ? { ...b, ...updates } : b)),
+        })),
+
+      deleteBill: (id) =>
+        set((state) => ({ bills: state.bills.filter((b) => b.id !== id) })),
+
+      markBillPaid: (id, date) => {
+        const bill = get().bills.find((b) => b.id === id);
+        if (!bill) return;
+        const currency = get().profile?.currency ?? "ZMW";
+        const tx: Transaction = {
+          id: createId("txn"),
+          type: "expense",
+          amount: bill.amount,
+          currency,
+          category: bill.category,
+          priority: bill.priority,
+          date,
+          note: `Bill: ${bill.name}`,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          transactions: [tx, ...state.transactions],
+          bills: state.bills.map((b) =>
+            b.id === id
+              ? b.frequency === "one_time"
+                ? { ...b, paidAt: date }
+                : { ...b, dueDate: addInterval(b.dueDate, b.frequency), paidAt: date }
+              : b
+          ),
+        }));
+      },
     }),
     {
       name: "sunga-store",
@@ -268,6 +357,7 @@ export const useSungaStore = create<SungaState>()(
         goals: state.goals,
         goalEntries: state.goalEntries,
         plans: state.plans,
+        bills: state.bills,
       }),
     }
   )
@@ -404,6 +494,20 @@ export function weeklySpending(transactions: Transaction[]) {
     return { day: label, amount };
   });
   return totals;
+}
+
+export function isBillUpcoming(bill: Bill) {
+  return bill.frequency === "one_time" ? !bill.paidAt : true;
+}
+
+export function upcomingBills(bills: Bill[]) {
+  return bills
+    .filter(isBillUpcoming)
+    .sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : 0));
+}
+
+export function paidBills(bills: Bill[]) {
+  return bills.filter((b) => b.frequency === "one_time" && b.paidAt);
 }
 
 export function savingsStreakWeeks(goalEntries: GoalDeposit[]) {

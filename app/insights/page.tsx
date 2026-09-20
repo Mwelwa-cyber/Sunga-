@@ -31,7 +31,12 @@ export default function InsightsPage() {
       <ScreenHeader title="Insights" />
       <ScreenBody>
         <Card>
-          <p className="mb-3 text-sm font-medium text-sunga-muted">This month</p>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-medium text-sunga-muted">This month</p>
+            <Link href="/transactions" className="text-sm font-medium text-sunga-orange">
+              All transactions
+            </Link>
+          </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="text-xs text-sunga-muted">Saved</p>

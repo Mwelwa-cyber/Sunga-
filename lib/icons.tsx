@@ -18,6 +18,9 @@ import {
   Hammer,
   CircleDollarSign,
   Target,
+  Zap,
+  Repeat,
+  ReceiptText,
   LucideIcon,
 } from "lucide-react";
 
@@ -41,6 +44,9 @@ export const ICONS: Record<string, LucideIcon> = {
   piecework: Hammer,
   salary: CircleDollarSign,
   target: Target,
+  utilities: Zap,
+  subscription: Repeat,
+  receipt: ReceiptText,
 };
 
 export function getIcon(name: string): LucideIcon {
@@ -82,6 +88,26 @@ export const GOAL_PURPOSE_ICONS: { label: string; icon: string }[] = [
   { label: "Emergency fund", icon: "shield" },
   { label: "Other", icon: "target" },
 ];
+
+export const BILL_CATEGORIES = [
+  "Rent",
+  "Utilities",
+  "School fees",
+  "Loan repayment",
+  "Insurance",
+  "Subscription",
+  "Other",
+];
+
+export const BILL_CATEGORY_ICONS: Record<string, string> = {
+  Rent: "home",
+  Utilities: "utilities",
+  "School fees": "graduation-cap",
+  "Loan repayment": "bank",
+  Insurance: "shield",
+  Subscription: "subscription",
+  Other: "receipt",
+};
 
 export const INCOME_SOURCE_ICONS: Record<string, string> = {
   salary: "salary",

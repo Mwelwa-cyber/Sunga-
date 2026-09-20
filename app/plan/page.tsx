@@ -2,16 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   useSungaStore,
   moneyAvailable,
   latestPlan,
   makeDefaultPlanCategories,
   hasFinancialData,
+  upcomingBills,
 } from "@/lib/store";
 import { ScreenHeader, ScreenBody, PrimaryButton, TipBanner, Stepper } from "@/components/ui";
 import { formatMoney } from "@/lib/currency";
-import { getIcon } from "@/lib/icons";
+import { daysUntil } from "@/lib/dates";
+import { IconGlyph } from "@/lib/icons";
 import { PlanCategory } from "@/lib/types";
 
 export default function PlanPage() {
@@ -20,12 +23,16 @@ export default function PlanPage() {
   const transactions = useSungaStore((s) => s.transactions);
   const goalEntries = useSungaStore((s) => s.goalEntries);
   const plans = useSungaStore((s) => s.plans);
+  const bills = useSungaStore((s) => s.bills);
   const savePlan = useSungaStore((s) => s.savePlan);
 
   const currency = profile?.currency ?? "ZMW";
   const available = moneyAvailable(transactions, goalEntries);
   const existingPlan = latestPlan(plans);
   const knowsBudget = hasFinancialData(transactions);
+  const dueSoonMustPay = upcomingBills(bills)
+    .filter((b) => b.priority === "must_pay" && daysUntil(b.dueDate) <= 14)
+    .reduce((sum, b) => sum + b.amount, 0);
 
   const [categories, setCategories] = useState<PlanCategory[]>(
     existingPlan ? existingPlan.categories.map((c) => ({ ...c })) : makeDefaultPlanCategories()
@@ -54,24 +61,31 @@ export default function PlanPage() {
           </TipBanner>
         )}
 
+        {dueSoonMustPay > 0 && (
+          <TipBanner tone="orange">
+            You have {formatMoney(dueSoonMustPay, currency)} in must-pay bills due within
+            two weeks — protect that before allocating the rest.{" "}
+            <Link href="/bills" className="font-semibold underline">
+              View bills
+            </Link>
+          </TipBanner>
+        )}
+
         <div className="space-y-2">
-          {categories.map((c) => {
-            const Icon = getIcon(c.icon);
-            return (
-              <div
-                key={c.id}
-                className="flex items-center justify-between rounded-2xl border border-sunga-border bg-white p-3.5"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sunga-green-tint text-sunga-green">
-                    <Icon size={16} />
-                  </span>
-                  <span className="font-medium text-sunga-green">{c.name}</span>
-                </div>
-                <Stepper value={c.amount} onChange={(v) => updateAmount(c.id, v)} />
+          {categories.map((c) => (
+            <div
+              key={c.id}
+              className="flex items-center justify-between rounded-2xl border border-sunga-border bg-white p-3.5"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-sunga-green-tint text-sunga-green">
+                  <IconGlyph name={c.icon} size={16} />
+                </span>
+                <span className="font-medium text-sunga-green">{c.name}</span>
               </div>
-            );
-          })}
+              <Stepper value={c.amount} onChange={(v) => updateAmount(c.id, v)} />
+            </div>
+          ))}
         </div>
 
         <div className="flex items-center justify-between rounded-2xl bg-sunga-green-tint p-4">
