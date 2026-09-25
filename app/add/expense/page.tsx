@@ -7,6 +7,7 @@ import { useSungaStore, EXPENSE_CATEGORIES } from "@/lib/store";
 import { ExpensePriority } from "@/lib/types";
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { todayISO, isoDaysAgo } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { getIcon, EXPENSE_CATEGORY_ICONS } from "@/lib/icons";
 
 const PRIORITIES: { value: ExpensePriority; label: string; hint: string }[] = [
@@ -30,7 +31,7 @@ function AddExpenseForm() {
 
   const currency = profile?.currency ?? "ZMW";
   const symbol = CURRENCY_SYMBOLS[currency];
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   function handleSubmit() {
     if (numericAmount <= 0) return;
@@ -55,7 +56,7 @@ function AddExpenseForm() {
               autoFocus
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
               placeholder="0"
               className="w-40 bg-transparent text-center outline-none placeholder:text-sunga-muted/40"
             />

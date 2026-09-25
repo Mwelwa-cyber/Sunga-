@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { createId } from "./id";
-import { addInterval, isSameMonth, startOfWeek, todayISO, WEEKDAY_LABELS } from "./dates";
+import { isSameMonth, nextDueDateAfterPayment, startOfWeek, todayISO, WEEKDAY_LABELS } from "./dates";
 import {
   Bill,
   BillFrequency,
@@ -19,6 +19,10 @@ import {
   Transaction,
   TransactionUpdate,
   TrackingMode,
+  ChilimbaContribution,
+  ChilimbaFrequency,
+  ChilimbaGroup,
+  ChilimbaPayout,
 } from "./types";
 
 export const DEFAULT_PLAN_CATEGORIES: Omit<PlanCategory, "id" | "amount">[] = [
@@ -47,6 +51,9 @@ interface SungaState {
   goalEntries: GoalDeposit[];
   plans: Plan[];
   bills: Bill[];
+  chilimbaGroups: ChilimbaGroup[];
+  chilimbaContributions: ChilimbaContribution[];
+  chilimbaPayouts: ChilimbaPayout[];
   hydrated: boolean;
 
   setHydrated: () => void;
@@ -126,6 +133,45 @@ interface SungaState {
   ) => void;
   deleteBill: (id: string) => void;
   markBillPaid: (id: string, date: string) => void;
+  addChilimbaGroup: (input: {
+    name: string;
+    contributionAmount: number;
+    frequency: ChilimbaFrequency;
+    cycleStartDate: string;
+    memberNames: string[];
+  }) => string;
+  recordChilimbaContribution: (input: {
+    groupId: string;
+    memberId: string;
+    cycleNumber: number;
+    amount: number;
+    paidAt: string;
+    note?: string;
+  }) => void;
+  recordChilimbaPayout: (input: {
+    groupId: string;
+    memberId: string;
+    cycleNumber: number;
+    amount: number;
+    paidAt: string;
+    note?: string;
+  }) => void;
+  removeChilimbaContribution: (groupId: string, memberId: string, cycleNumber: number) => void;
+  removeChilimbaPayout: (groupId: string, cycleNumber: number) => void;
+  replaceLocalData: (data: SungaBackupData) => void;
+  resetLocalData: () => void;
+}
+
+export interface SungaBackupData {
+  profile: Profile | null;
+  transactions: Transaction[];
+  goals: Goal[];
+  goalEntries: GoalDeposit[];
+  plans: Plan[];
+  bills: Bill[];
+  chilimbaGroups: ChilimbaGroup[];
+  chilimbaContributions: ChilimbaContribution[];
+  chilimbaPayouts: ChilimbaPayout[];
 }
 
 const initialProfile: Profile | null = null;
@@ -139,6 +185,9 @@ export const useSungaStore = create<SungaState>()(
       goalEntries: [],
       plans: [],
       bills: [],
+      chilimbaGroups: [],
+      chilimbaContributions: [],
+      chilimbaPayouts: [],
       hydrated: false,
 
       setHydrated: () => set({ hydrated: true }),
@@ -341,11 +390,117 @@ export const useSungaStore = create<SungaState>()(
             b.id === id
               ? b.frequency === "one_time"
                 ? { ...b, paidAt: date }
-                : { ...b, dueDate: addInterval(b.dueDate, b.frequency), paidAt: date }
+                : {
+                    ...b,
+                    dueDate: nextDueDateAfterPayment(b.dueDate, b.frequency, date),
+                    paidAt: date,
+                  }
               : b
           ),
         }));
       },
+
+      addChilimbaGroup: ({
+        name,
+        contributionAmount,
+        frequency,
+        cycleStartDate,
+        memberNames,
+      }) => {
+        const id = createId("group");
+        const createdAt = new Date().toISOString();
+        const members = memberNames.map((memberName) => ({
+          id: createId("member"),
+          name: memberName.trim(),
+          active: true,
+          createdAt,
+        }));
+        const group: ChilimbaGroup = {
+          id,
+          name: name.trim(),
+          contributionAmount,
+          frequency,
+          cycleStartDate,
+          members,
+          payoutOrder: members.map((member) => member.id),
+          status: "active",
+          createdAt,
+        };
+        set((state) => ({ chilimbaGroups: [group, ...state.chilimbaGroups] }));
+        return id;
+      },
+
+      recordChilimbaContribution: (input) => {
+        const contribution: ChilimbaContribution = {
+          id: createId("contribution"),
+          ...input,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          chilimbaContributions: [
+            contribution,
+            ...state.chilimbaContributions.filter(
+              (existing) =>
+                !(
+                  existing.groupId === input.groupId &&
+                  existing.memberId === input.memberId &&
+                  existing.cycleNumber === input.cycleNumber
+                )
+            ),
+          ],
+        }));
+      },
+
+      recordChilimbaPayout: (input) => {
+        const payout: ChilimbaPayout = {
+          id: createId("payout"),
+          ...input,
+          createdAt: new Date().toISOString(),
+        };
+        set((state) => ({
+          chilimbaPayouts: [
+            payout,
+            ...state.chilimbaPayouts.filter(
+              (existing) =>
+                !(existing.groupId === input.groupId && existing.cycleNumber === input.cycleNumber)
+            ),
+          ],
+        }));
+      },
+
+      removeChilimbaContribution: (groupId, memberId, cycleNumber) =>
+        set((state) => ({
+          chilimbaContributions: state.chilimbaContributions.filter(
+            (entry) =>
+              !(
+                entry.groupId === groupId &&
+                entry.memberId === memberId &&
+                entry.cycleNumber === cycleNumber
+              )
+          ),
+        })),
+
+      removeChilimbaPayout: (groupId, cycleNumber) =>
+        set((state) => ({
+          chilimbaPayouts: state.chilimbaPayouts.filter(
+            (entry) => !(entry.groupId === groupId && entry.cycleNumber === cycleNumber)
+          ),
+        })),
+
+      replaceLocalData: (data) => set(data),
+
+      resetLocalData: () =>
+        set({
+          profile: null,
+          transactions: [],
+          goals: [],
+          goalEntries: [],
+          plans: [],
+          bills: [],
+          chilimbaGroups: [],
+          chilimbaContributions: [],
+          chilimbaPayouts: [],
+        }),
     }),
     {
       name: "sunga-store",
@@ -358,6 +513,9 @@ export const useSungaStore = create<SungaState>()(
         goalEntries: state.goalEntries,
         plans: state.plans,
         bills: state.bills,
+        chilimbaGroups: state.chilimbaGroups,
+        chilimbaContributions: state.chilimbaContributions,
+        chilimbaPayouts: state.chilimbaPayouts,
       }),
     }
   )
@@ -532,4 +690,18 @@ export function savingsStreakWeeks(goalEntries: GoalDeposit[]) {
     week -= oneWeekMs;
   }
   return streak;
+}
+
+export function getBackupData(state: SungaState): SungaBackupData {
+  return {
+    profile: state.profile,
+    transactions: state.transactions,
+    goals: state.goals,
+    goalEntries: state.goalEntries,
+    plans: state.plans,
+    bills: state.bills,
+    chilimbaGroups: state.chilimbaGroups,
+    chilimbaContributions: state.chilimbaContributions,
+    chilimbaPayouts: state.chilimbaPayouts,
+  };
 }

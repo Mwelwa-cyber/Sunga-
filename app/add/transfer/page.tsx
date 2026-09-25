@@ -7,6 +7,7 @@ import { useSungaStore } from "@/lib/store";
 import { SavingsLocation } from "@/lib/types";
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { todayISO } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { ArrowLeftRight } from "lucide-react";
 
 const LOCATIONS: { value: SavingsLocation; label: string }[] = [
@@ -30,10 +31,10 @@ export default function AddTransferPage() {
 
   const currency = profile?.currency ?? "ZMW";
   const symbol = CURRENCY_SYMBOLS[currency];
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   function handleSubmit() {
-    if (numericAmount <= 0) return;
+    if (numericAmount <= 0 || from === to) return;
     addTransfer({
       amount: numericAmount,
       from,
@@ -55,7 +56,7 @@ export default function AddTransferPage() {
               autoFocus
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
               placeholder="0"
               className="w-40 bg-transparent text-center outline-none placeholder:text-sunga-muted/40"
             />
@@ -108,7 +109,11 @@ export default function AddTransferPage() {
           counted as an expense.
         </TipBanner>
 
-        <PrimaryButton disabled={numericAmount <= 0} onClick={handleSubmit}>
+        {from === to && (
+          <TipBanner tone="orange">Choose two different locations for a transfer.</TipBanner>
+        )}
+
+        <PrimaryButton disabled={numericAmount <= 0 || from === to} onClick={handleSubmit}>
           Record transfer
         </PrimaryButton>
       </ScreenBody>

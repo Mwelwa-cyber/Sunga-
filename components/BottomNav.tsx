@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Plus, ListChecks, BarChart3 } from "lucide-react";
+import { Home, CalendarDays, Plus, UsersRound, BarChart3 } from "lucide-react";
 import clsx from "clsx";
 
 const NAV_ITEMS: {
@@ -14,7 +14,7 @@ const NAV_ITEMS: {
   { href: "/home", label: "Home", icon: Home },
   { href: "/plan", label: "Plan", icon: CalendarDays },
   { href: "/add", label: "Add", icon: Plus, isAction: true },
-  { href: "/track", label: "Track", icon: ListChecks },
+  { href: "/groups", label: "Groups", icon: UsersRound },
   { href: "/insights", label: "Insights", icon: BarChart3 },
 ];
 

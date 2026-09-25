@@ -7,6 +7,7 @@ import { useSungaStore } from "@/lib/store";
 import { IncomeFrequency, IncomeSource } from "@/lib/types";
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { todayISO, isoDaysAgo } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { getIcon, INCOME_SOURCE_ICONS } from "@/lib/icons";
 
 const SOURCES: { value: IncomeSource; label: string }[] = [
@@ -33,7 +34,7 @@ export default function AddIncomePage() {
 
   const currency = profile?.currency ?? "ZMW";
   const symbol = CURRENCY_SYMBOLS[currency];
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   function resolveDate() {
     if (when === "today") return todayISO();
@@ -64,7 +65,7 @@ export default function AddIncomePage() {
               autoFocus
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
               placeholder="0"
               className="w-40 bg-transparent text-center outline-none placeholder:text-sunga-muted/40"
             />

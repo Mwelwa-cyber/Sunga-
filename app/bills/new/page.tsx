@@ -7,6 +7,7 @@ import { useSungaStore } from "@/lib/store";
 import { BillFrequency, ExpensePriority } from "@/lib/types";
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { todayISO } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { IconGlyph, BILL_CATEGORIES, BILL_CATEGORY_ICONS } from "@/lib/icons";
 
 const FREQUENCIES: { value: BillFrequency; label: string }[] = [
@@ -37,7 +38,7 @@ export default function NewBillPage() {
 
   const currency = profile?.currency ?? "ZMW";
   const symbol = CURRENCY_SYMBOLS[currency];
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   function handleSubmit() {
     if (numericAmount <= 0 || !name.trim() || !dueDate) return;
@@ -71,7 +72,7 @@ export default function NewBillPage() {
           <input
             inputMode="decimal"
             value={amount}
-            onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
             placeholder="Amount"
             className="w-full bg-transparent text-base outline-none"
           />

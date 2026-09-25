@@ -1,11 +1,18 @@
 export function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return localDateISO(new Date());
+}
+
+function localDateISO(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export function isoDaysAgo(days: number) {
   const d = new Date();
   d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
+  return localDateISO(d);
 }
 
 export function isSameDay(isoA: string, isoB: string) {
@@ -81,9 +88,31 @@ export function formatDueLabel(iso: string) {
 }
 
 export function addInterval(iso: string, frequency: "weekly" | "monthly" | "yearly") {
-  const d = new Date(iso.slice(0, 10));
+  const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
+  const d = new Date(year, month - 1, day);
   if (frequency === "weekly") d.setDate(d.getDate() + 7);
-  else if (frequency === "monthly") d.setMonth(d.getMonth() + 1);
-  else d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString().slice(0, 10);
+  else if (frequency === "monthly") {
+    d.setDate(1);
+    d.setMonth(d.getMonth() + 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastDay));
+  } else {
+    d.setDate(1);
+    d.setFullYear(d.getFullYear() + 1);
+    const lastDay = new Date(d.getFullYear(), month, 0).getDate();
+    d.setMonth(month - 1, Math.min(day, lastDay));
+  }
+  return localDateISO(d);
+}
+
+export function nextDueDateAfterPayment(
+  dueDate: string,
+  frequency: "weekly" | "monthly" | "yearly",
+  paidDate: string
+) {
+  let next = addInterval(dueDate, frequency);
+  while (next <= paidDate.slice(0, 10)) {
+    next = addInterval(next, frequency);
+  }
+  return next;
 }

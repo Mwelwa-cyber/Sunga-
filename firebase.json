@@ -9,7 +9,8 @@
     "rewrites": [
       { "source": "/goals/**", "destination": "/goals/_/index.html" },
       { "source": "/bills/**", "destination": "/bills/_/index.html" },
-      { "source": "/transactions/**", "destination": "/transactions/_/index.html" }
+      { "source": "/transactions/**", "destination": "/transactions/_/index.html" },
+      { "source": "/groups/**", "destination": "/groups/_/index.html" }
     ]
   }
 }

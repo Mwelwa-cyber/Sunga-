@@ -15,6 +15,7 @@ import { useSungaStore } from "@/lib/store";
 import { BillFrequency, ExpensePriority } from "@/lib/types";
 import { CURRENCY_SYMBOLS, formatMoney } from "@/lib/currency";
 import { daysUntil, formatDueLabel, todayISO } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { IconGlyph, BILL_CATEGORIES, BILL_CATEGORY_ICONS } from "@/lib/icons";
 import { CheckCircle2 } from "lucide-react";
 import { useRouteId } from "@/lib/useRouteId";
@@ -63,7 +64,7 @@ export default function BillDetailClient() {
     );
   }
 
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
   const overdue = daysUntil(bill.dueDate) < 0;
 
   function handleSave() {
@@ -120,7 +121,7 @@ export default function BillDetailClient() {
           <input
             inputMode="decimal"
             value={amount}
-            onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
             className="w-full bg-transparent text-base outline-none"
           />
         </div>

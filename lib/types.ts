@@ -140,3 +140,48 @@ export interface Plan {
   categories: PlanCategory[];
   createdAt: string;
 }
+
+export type ChilimbaFrequency = "weekly" | "monthly";
+export type ChilimbaGroupStatus = "active" | "completed";
+
+export interface ChilimbaMember {
+  id: string;
+  name: string;
+  phone?: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface ChilimbaGroup {
+  id: string;
+  name: string;
+  contributionAmount: number;
+  frequency: ChilimbaFrequency;
+  cycleStartDate: string;
+  members: ChilimbaMember[];
+  payoutOrder: string[];
+  status: ChilimbaGroupStatus;
+  createdAt: string;
+}
+
+export interface ChilimbaContribution {
+  id: string;
+  groupId: string;
+  memberId: string;
+  cycleNumber: number;
+  amount: number;
+  paidAt: string;
+  note?: string;
+  createdAt: string;
+}
+
+export interface ChilimbaPayout {
+  id: string;
+  groupId: string;
+  memberId: string;
+  cycleNumber: number;
+  amount: number;
+  paidAt: string;
+  note?: string;
+  createdAt: string;
+}

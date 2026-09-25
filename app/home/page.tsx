@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Bell, Wallet, TrendingUp, TrendingDown, Lock } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Lock, Settings } from "lucide-react";
 import {
   useSungaStore,
   moneyAvailable,
@@ -55,12 +55,13 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-        <button
-          aria-label="Notifications"
+        <Link
+          href="/settings"
+          aria-label="Data and privacy settings"
           className="flex h-10 w-10 items-center justify-center rounded-full border border-sunga-border bg-white text-sunga-green"
         >
-          <Bell size={18} />
-        </button>
+          <Settings size={18} />
+        </Link>
       </div>
 
       <div className="mb-2 flex items-center justify-between">
@@ -75,11 +76,13 @@ export default function HomePage() {
 
       <div className="mt-3 space-y-4">
         <div className="rounded-2xl bg-sunga-green p-5 text-sunga-cream">
-          <p className="text-sm text-sunga-cream/80">Money available</p>
+          <p className="text-sm text-sunga-cream/80">Recorded balance</p>
           <p className="font-display mt-1 text-4xl font-semibold">
             {formatMoney(available, currency)}
           </p>
-          <p className="mt-1 text-xs text-sunga-cream/70">Based on what you&apos;ve recorded</p>
+          <p className="mt-1 text-xs text-sunga-cream/70">
+            All recorded income minus expenses and goal contributions
+          </p>
           <Link
             href="/plan"
             className="mt-4 block rounded-full bg-sunga-orange px-5 py-3 text-center font-semibold text-white"

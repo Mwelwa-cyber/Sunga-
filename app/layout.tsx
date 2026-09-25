@@ -1,18 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
+import PwaRegister from "@/components/PwaRegister";
 
 export const metadata: Metadata = {
   title: "Sunga — Every kwacha has a purpose",
@@ -29,11 +18,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${fraunces.variable} ${inter.variable} h-full antialiased`}
-    >
+    <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-sunga-cream text-sunga-green">
+        <PwaRegister />
         <AppShell>{children}</AppShell>
       </body>
     </html>

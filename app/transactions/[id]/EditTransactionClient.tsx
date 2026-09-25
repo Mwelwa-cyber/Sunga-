@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ScreenHeader, ScreenBody, PrimaryButton, SecondaryButton, Card, Chip } from "@/components/ui";
+import { ScreenHeader, ScreenBody, PrimaryButton, SecondaryButton, Card, Chip, TipBanner } from "@/components/ui";
 import { useSungaStore, EXPENSE_CATEGORIES } from "@/lib/store";
 import {
   ExpensePriority,
@@ -13,6 +13,7 @@ import {
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { IconGlyph, EXPENSE_CATEGORY_ICONS, INCOME_SOURCE_ICONS } from "@/lib/icons";
 import { useRouteId } from "@/lib/useRouteId";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 
 const INCOME_SOURCES: { value: IncomeSource; label: string }[] = [
   { value: "salary", label: "Salary" },
@@ -87,10 +88,11 @@ export default function EditTransactionClient() {
     );
   }
 
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   function handleSave() {
     if (numericAmount <= 0 || !date) return;
+    if (transaction!.type === "transfer" && from === to) return;
     if (transaction!.type === "income") {
       updateTransaction(transaction!.id, {
         amount: numericAmount,
@@ -138,7 +140,7 @@ export default function EditTransactionClient() {
             <input
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
               className="w-40 bg-transparent text-center outline-none"
             />
           </div>
@@ -248,6 +250,10 @@ export default function EditTransactionClient() {
           </Card>
         )}
 
+        {transaction.type === "transfer" && from === to && (
+          <TipBanner tone="orange">Choose two different locations for a transfer.</TipBanner>
+        )}
+
         <Card>
           <label className="block text-sm font-medium text-sunga-muted">Date</label>
           <input
@@ -265,7 +271,10 @@ export default function EditTransactionClient() {
           className="w-full rounded-xl border border-sunga-border bg-white px-3.5 py-3 text-sm outline-none focus:border-sunga-green"
         />
 
-        <PrimaryButton disabled={numericAmount <= 0 || !date} onClick={handleSave}>
+        <PrimaryButton
+          disabled={numericAmount <= 0 || !date || (transaction.type === "transfer" && from === to)}
+          onClick={handleSave}
+        >
           Save changes
         </PrimaryButton>
         <SecondaryButton onClick={handleDelete} className="border-sunga-danger text-sunga-danger">

@@ -8,6 +8,7 @@ import { GoalPriority, SavingsLocation } from "@/lib/types";
 import { CURRENCY_SYMBOLS, formatMoney } from "@/lib/currency";
 import { GOAL_PURPOSE_ICONS, getIcon } from "@/lib/icons";
 import { Sparkles } from "lucide-react";
+import { cleanMoneyInput } from "@/lib/money";
 
 const PRIORITIES: { value: GoalPriority; label: string }[] = [
   { value: "essential", label: "Essential" },
@@ -140,7 +141,7 @@ export default function NewGoalPage() {
                 <input
                   inputMode="decimal"
                   value={targetAmount}
-                  onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                  onChange={(e) => setTargetAmount(cleanMoneyInput(e.target.value))}
                   placeholder="Target amount"
                   className="w-full bg-transparent text-base outline-none"
                 />

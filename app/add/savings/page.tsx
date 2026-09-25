@@ -7,6 +7,7 @@ import { useSungaStore } from "@/lib/store";
 import { SavingsLocation } from "@/lib/types";
 import { CURRENCY_SYMBOLS } from "@/lib/currency";
 import { todayISO } from "@/lib/dates";
+import { cleanMoneyInput, parseMoney } from "@/lib/money";
 import { getIcon } from "@/lib/icons";
 import { Target } from "lucide-react";
 
@@ -34,7 +35,7 @@ function AddSavingsForm() {
 
   const currency = profile?.currency ?? "ZMW";
   const symbol = CURRENCY_SYMBOLS[currency];
-  const numericAmount = Number(amount) || 0;
+  const numericAmount = parseMoney(amount) ?? 0;
 
   if (goals.length === 0) {
     return (
@@ -82,7 +83,7 @@ function AddSavingsForm() {
               autoFocus
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+              onChange={(e) => setAmount(cleanMoneyInput(e.target.value))}
               placeholder="0"
               className="w-40 bg-transparent text-center outline-none placeholder:text-sunga-muted/40"
             />

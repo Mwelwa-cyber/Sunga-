@@ -20,8 +20,8 @@ document.
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS v4
-- Zustand (with `persist` to `localStorage`) for state — offline-friendly,
-  no backend required for this phase
+- Zustand (with `persist` to `localStorage`) for local state — no backend
+  required for this pilot
 - Recharts for the weekly spending chart
 - lucide-react for icons
 
@@ -64,9 +64,16 @@ npm run lint    # eslint
 - Transaction history and editing: every income/expense/transfer is
   editable and deletable (amount, category/source, priority, date, note)
   from `/transactions`
+- Local-first Chilimba pilot: groups, members, contribution cycles,
+  paid/pending status, payout records, WhatsApp-friendly statements and CSV
+  export
+- Encrypted backup export and restore using a user-supplied passphrase
+- Installable PWA shell that caches visited app pages for offline return visits
 
-All data is stored locally in the browser (`localStorage`) — there is no
-backend yet. Clearing site data resets the app.
+All live data is stored locally in the browser (`localStorage`) — there is no
+backend yet. Live browser storage is not encrypted, so this build is a pilot
+and should not be used on shared devices. Clearing site data resets the app;
+users should export an encrypted backup from **Data & privacy** first.
 
 ## Product principles this build follows
 
@@ -76,5 +83,14 @@ backend yet. Clearing site data resets the app.
   Sunga says so instead of pretending a savings plan is confirmed affordable.
 - **Advice, not control.** Nothing is ever moved, cancelled or changed
   automatically.
-- **Sunga does not hold money.** This is stated in the UI, and no
-  transfer/payment functionality exists in this phase.
+- **Sunga does not hold money.** This is stated in the UI. “Transfer,”
+  “contribution,” and “payout” actions only create records; no payment API is
+  connected.
+
+## Quality checks
+
+```bash
+npm run lint
+npm test
+npm run build
+```
